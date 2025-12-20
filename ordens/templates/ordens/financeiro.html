@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Financeiro - {{ config_projeto.nome_empresa }}</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    {% if config_projeto.favicon %}
+    <link rel="icon" href="{{ config_projeto.favicon.url }}" />
+    {% endif %}
+    <style>
+      .sidebar {
+        height: 100vh;
+        width: 250px;
+        position: fixed;
+        background: #212529;
+        color: white;
+        padding-top: 20px;
+      }
+      .sidebar a {
+        padding: 15px;
+        text-decoration: none;
+        color: #adb5bd;
+        display: block;
+      }
+      .sidebar a:hover {
+        background: #343a40;
+        color: white;
+      }
+      .main-content {
+        margin-left: 250px;
+        padding: 20px;
+        background-color: #f8f9fa;
+        min-height: 100vh;
+      }
+      .card-financeiro {
+        border: none;
+        border-radius: 15px;
+        transition: 0.3s;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sidebar shadow">
+      <div class="text-center mb-4">
+        <h6 class="text-white px-2">{{ config_projeto.nome_empresa }}</h6>
+      </div>
+      <a href="{% url 'home' %}"
+        ><i class="fa-solid fa-chart-line me-2"></i> Dashboard</a
+      >
+      <a href="{% url 'lista_clientes' %}"
+        ><i class="fa-solid fa-users me-2"></i> Clientes</a
+      >
+      <a href="{% url 'lista_ordens' %}"
+        ><i class="fa-solid fa-file-invoice-dollar me-2"></i> Ordens de
+        Serviço</a
+      >
+      <a href="{% url 'setor_arte' %}"
+        ><i class="fa-solid fa-palette me-2"></i> Setor de Arte</a
+      >
+      <a href="{% url 'financeiro' %}"
+        ><i class="fa-solid fa-wallet me-2"></i> Financeiro</a
+      >
+      <a href="{% url 'lista_funcionarios' %}"
+        ><i class="fa-solid fa-user-tie me-2"></i> Funcionários</a
+      >
+      <a href="{% url 'configuracoes_sistema' %}" class="nav-link">
+        <i class="fa-solid fa-screwdriver-wrench me-2"></i> Personalizar Sistema
+      </a>
+      <a href="{% url 'logout' %}" class="text-danger mt-5"
+        ><i class="fa-solid fa-right-from-bracket me-2"></i> Sair</a
+      >
+    </div>
+
+    <div class="main-content">
+      <h2 class="mb-4">
+        <i class="fa-solid fa-wallet text-success me-2"></i>Controle Financeiro
+      </h2>
+
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+          <form method="GET" class="row align-items-end">
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Data Inicial</label>
+              <input
+                type="date"
+                name="data_inicio"
+                class="form-control"
+                value="{{ data_inicio }}"
+              />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Data Final</label>
+              <input
+                type="date"
+                name="data_fim"
+                class="form-control"
+                value="{{ data_fim }}"
+              />
+            </div>
+
+            <div class="col-md-4 mt-3 mt-md-0">
+              <button type="submit" class="btn btn-primary w-100">
+                <i class="fa-solid fa-filter me-2"></i>Filtrar Período
+              </button>
+              {% if data_inicio %}
+              <a
+                href="{% url 'financeiro' %}"
+                class="btn btn-link btn-sm w-100 text-decoration-none text-muted mt-1"
+                >Limpar Filtro</a
+              >
+              {% endif %}
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="row mb-4">
+        <div class="col-md-4 mb-4">
+          <div class="card card-financeiro bg-success text-white shadow">
+            <div class="card-body p-4">
+              <h6>
+                <i class="fa-solid fa-hand-holding-dollar me-2"></i>Total
+                Recebido
+              </h6>
+              <h3>R$ {{ recebido }}</h3>
+              <small>Vendas concluídas (Entregues)</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+          <div class="card card-financeiro bg-warning text-dark shadow">
+            <div class="card-body p-4">
+              <h6>
+                <i class="fa-solid fa-clock-rotate-left me-2"></i>A Receber
+              </h6>
+              <h3>R$ {{ a_receber }}</h3>
+              <small>Ordens em produção/arte</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+          <div class="card card-financeiro bg-dark text-white shadow">
+            <div class="card-body p-4">
+              <h6>
+                <i class="fa-solid fa-file-contract me-2"></i>Volume Total
+              </h6>
+              <h3>R$ {{ total_vendas }}</h3>
+              <small>Total bruto negociado</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card shadow border-0">
+        <div class="card-header bg-white py-3">
+          <h5 class="mb-0">
+            <i class="fa-solid fa-list-check me-2 text-primary"></i>Últimas
+            Movimentações
+          </h5>
+        </div>
+
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>ID</th>
+                  <th>Cliente</th>
+                  <th>Serviço</th>
+                  <th>Status</th>
+                  <th class="text-end">Valor</th>
+                  <th class="text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for os in ultimas_os %}
+                <tr>
+                  <td>#{{ os.id }}</td>
+                  <td><strong>{{ os.cliente.nome }}</strong></td>
+                  <td>{{ os.servico }}</td>
+                  <td>
+                    {% if os.status == 'ENTREGUE' %}
+                    <span class="badge bg-success text-white">Recebido</span>
+                    {% else %}
+                    <span class="badge bg-secondary text-white">Em Aberto</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-end text-success">
+                    <strong>R$ {{ os.valor }}</strong>
+                  </td>
+                  <td class="text-center">
+                    <a
+                      href="{% url 'gerar_pdf_ordem' os.id %}"
+                      class="btn btn-sm btn-outline-danger"
+                      title="Baixar PDF"
+                    >
+                      <i class="fa-solid fa-file-pdf"></i>
+                    </a>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="6" class="text-center text-muted py-4">
+                    Nenhuma movimentação encontrada.
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

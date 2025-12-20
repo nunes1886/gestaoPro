@@ -1,0 +1,13 @@
+# Python e Django
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Banco de Dados (NUNCA SUBIR ISSO)
+db.sqlite3
+
+# Arquivos de Mídia (Uploads de teste não devem ir para o github)
+media/
+static/

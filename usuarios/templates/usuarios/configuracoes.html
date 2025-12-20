@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Configurações - {{ config.nome_empresa }}</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    {% if config.favicon %}
+    <link rel="icon" href="{{ config.favicon.url }}" />
+    {% endif %}
+    
+    <style>
+      body {
+        background-color: #f8f9fa;
+        overflow-x: hidden;
+      }
+      /* Estilos da Sidebar */
+      .sidebar {
+        height: 100vh;
+        width: 250px;
+        position: fixed;
+        background: #212529;
+        color: white;
+        padding-top: 20px;
+        z-index: 1000;
+        transition: all 0.3s;
+      }
+      .sidebar a {
+        padding: 15px 20px;
+        text-decoration: none;
+        color: #adb5bd;
+        display: block;
+        transition: 0.2s;
+      }
+      .sidebar a:hover {
+        background: #343a40;
+        color: white;
+        padding-left: 25px; /* Efeito de deslize */
+      }
+      .sidebar .active {
+        background: #0d6efd; /* Azul Bootstrap */
+        color: white;
+      }
+      
+      /* Conteúdo Principal */
+      .main-content {
+        margin-left: 250px; /* Mesma largura da sidebar */
+        padding: 20px;
+      }
+      
+      /* Ajuste da tabela de produtos */
+      .table-scroll {
+          max-height: 250px;
+          overflow-y: auto;
+      }
+
+      /* Responsividade para celular */
+      @media (max-width: 768px) {
+        .sidebar {
+          width: 100%;
+          height: auto;
+          position: relative;
+        }
+        .main-content {
+          margin-left: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    
+    <div class="sidebar shadow">
+      <div class="text-center mb-4">
+        {% if config.logo %}
+        <img
+          src="{{ config.logo.url }}"
+          width="80"
+          height="80"
+          style="object-fit: cover;"
+          class="rounded-circle mb-2 border border-secondary"
+        />
+        {% endif %}
+        <h6 class="text-white px-2 mt-2">{{ config.nome_empresa }}</h6>
+      </div>
+
+      <a href="{% url 'home' %}"><i class="fa-solid fa-chart-line me-2"></i> Dashboard</a>
+      <a href="{% url 'lista_clientes' %}"><i class="fa-solid fa-users me-2"></i> Clientes</a>
+      <a href="{% url 'lista_ordens' %}"><i class="fa-solid fa-file-invoice-dollar me-2"></i> Ordens de Serviço</a>
+      <a href="{% url 'setor_arte' %}"><i class="fa-solid fa-palette me-2"></i> Setor de Arte</a>
+      
+      {% if request.user.perfil.setor.pode_ver_financeiro or request.user.is_superuser %}
+      <a href="{% url 'financeiro' %}"><i class="fa-solid fa-wallet me-2"></i> Financeiro</a>
+      {% endif %}
+
+      {% if request.user.perfil.setor.pode_gerir_equipe or request.user.is_superuser %}
+      <a href="{% url 'lista_funcionarios' %}"><i class="fa-solid fa-user-tie me-2"></i> Funcionários</a>
+      {% endif %}
+
+      <a href="{% url 'configuracoes_sistema' %}" class="active">
+        <i class="fa-solid fa-screwdriver-wrench me-2"></i> Personalizar Sistema
+      </a>
+
+      <form method="post" action="{% url 'logout' %}" class="mt-5 px-3">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-outline-danger w-100 btn-sm">
+              <i class="fa-solid fa-right-from-bracket me-2"></i> Sair do Sistema
+          </button>
+      </form>
+    </div>
+
+    <div class="main-content">
+      
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+            <i class="fa-solid fa-circle-info me-2"></i> {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-gears me-2 text-primary"></i>Configurações Gerais</h4>
+            <small class="text-muted">Gerencie dados da empresa, produtos e hierarquia.</small>
+        </div>
+        <a href="{% url 'home' %}" class="btn btn-dark btn-sm shadow-sm"><i class="fa-solid fa-arrow-left me-2"></i>Voltar</a>
+      </div>
+
+      <div class="row g-3">
+        
+        <div class="col-lg-5">
+          <div class="card shadow border-0 h-100">
+            <div class="card-header bg-white border-bottom py-3">
+              <span class="fw-bold text-secondary"><i class="fa-solid fa-building me-2"></i> Dados da Empresa</span>
+            </div>
+            <div class="card-body">
+              <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label class="small fw-bold text-muted">Nome Fantasia</label>
+                    {{ form_config.nome_empresa }}
+                </div>
+                
+                <div class="mb-3">
+                    <label class="small fw-bold text-muted">CNPJ</label>
+                    {{ form_config.cnpj }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="small fw-bold text-muted">Endereço Completo</label>
+                    {{ form_config.endereco }}
+                </div>
+
+                <div class="row">
+                    <div class="col-6 mb-3">
+                        <label class="small fw-bold text-muted">CEP</label>
+                        {{ form_config.cep }}
+                    </div>
+                    <div class="col-6 mb-3">
+                        <label class="small fw-bold text-muted">Telefone / WhatsApp</label>
+                        {{ form_config.telefone }}
+                    </div>
+                </div>
+
+                <div class="mb-3 border-top pt-3">
+                    <label class="small fw-bold text-muted">Logo do Sistema</label>
+                    {{ form_config.logo }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="small fw-bold text-muted">Favicon (Ícone da Aba)</label>
+                    {{ form_config.favicon }}
+                </div>
+
+                <button type="submit" name="btn_empresa" class="btn btn-primary w-100 mt-2 shadow-sm">
+                  <i class="fa-solid fa-floppy-disk me-2"></i> Salvar Alterações
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-7">
+          <div class="row g-3">
+            
+            <div class="col-12">
+              <div class="card shadow border-0">
+                <div class="card-header bg-success text-white fw-bold py-2 d-flex justify-content-between align-items-center">
+                  <span><i class="fa-solid fa-tags me-2"></i> Produtos & Preços (m²)</span>
+                </div>
+                <div class="card-body bg-white">
+                    <form method="POST" class="row g-2 align-items-end mb-4 p-3 bg-light rounded border">
+                        {% csrf_token %}
+                        <div class="col-md-5">
+                            <label class="small fw-bold">Material</label>
+                            {{ form_produto.nome }}
+                        </div>
+                        <div class="col-md-3">
+                            <label class="small fw-bold">Venda (R$)</label>
+                            {{ form_produto.preco_venda }}
+                        </div>
+                        <div class="col-md-3">
+                            <label class="small fw-bold">Revenda (R$)</label>
+                            {{ form_produto.preco_revenda }}
+                        </div>
+                        <div class="col-md-1">
+                            <button type="submit" name="btn_produto" class="btn btn-success w-100 shadow-sm"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </form>
+
+                    <div class="table-scroll">
+                        <table class="table table-hover table-sm align-middle mb-0">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Venda</th>
+                                    <th>Revenda</th>
+                                    <th class="text-end">Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for p in produtos %}
+                                <tr>
+                                    <td class="fw-bold text-secondary">{{ p.nome }}</td>
+                                    <td class="text-success">R$ {{ p.preco_venda }}</td>
+                                    <td class="text-primary">R$ {{ p.preco_revenda }}</td>
+                                    <td class="text-end">
+                                        <a href="{% url 'deletar_item' 'produto' p.id %}" class="btn btn-sm text-danger" onclick="return confirm('Excluir {{ p.nome }}?')"><i class="fa-solid fa-trash-can"></i></a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="4" class="text-center text-muted py-3 small">Nenhum produto cadastrado.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="card shadow border-0 h-100">
+                <div class="card-header bg-info text-white fw-bold py-2">
+                  <i class="fa-solid fa-layer-group me-2"></i> Setores da Empresa
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="d-flex gap-2 mb-3">
+                        {% csrf_token %}
+                        {{ form_setor.nome }}
+                        <button type="submit" name="btn_setor" class="btn btn-info text-white shadow-sm"><i class="fa-solid fa-plus"></i></button>
+                    </form>
+                    <ul class="list-group list-group-flush small">
+                        {% for s in setores %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0 border-bottom">
+                            {{ s.nome }}
+                            <a href="{% url 'deletar_item' 'setor' s.id %}" class="text-danger" onclick="return confirm('Excluir setor {{ s.nome }}?')"><i class="fa-solid fa-trash-can"></i></a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="card shadow border-0 h-100">
+                <div class="card-header bg-warning text-dark fw-bold py-2">
+                  <i class="fa-solid fa-list-check me-2"></i> Status de O.S.
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="row g-2 mb-3">
+                        {% csrf_token %}
+                        <div class="col-12">{{ form_status.nome }}</div>
+                        <div class="col-9">{{ form_status.tipo }}</div>
+                        <div class="col-3">
+                            <button type="submit" name="btn_status" class="btn btn-warning w-100 shadow-sm"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </form>
+                    <ul class="list-group list-group-flush small">
+                        {% for st in lista_status %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0 border-bottom">
+                            {{ st.nome }}
+                            <a href="{% url 'deletar_item' 'status' st.id %}" class="text-danger" onclick="return confirm('Excluir status?')"><i class="fa-solid fa-trash-can"></i></a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 mt-4 mb-5">
+          <div class="card border border-danger shadow-sm">
+            <div class="card-header bg-danger bg-opacity-10 text-danger fw-bold py-2">
+              <i class="fa-solid fa-triangle-exclamation me-2"></i> Zona de Risco (Banco de Dados)
+            </div>
+            <div class="card-body">
+                <div class="row align-items-center">
+                    
+                    <div class="col-md-8 border-end">
+                        <h6 class="fw-bold text-secondary">Backup & Restauração</h6>
+                        <p class="text-muted small mb-3">Baixe uma cópia dos dados ou restaure um arquivo antigo.</p>
+                        
+                        <div class="d-flex gap-2 align-items-end">
+                            <button class="btn btn-outline-dark btn-sm" onclick="alert('Download do db.sqlite3 iniciado...')">
+                                <i class="fa-solid fa-download me-2"></i>Baixar Backup Atual
+                            </button>
+
+                            <form method="POST" enctype="multipart/form-data" class="d-flex gap-2 align-items-center ms-3 bg-light p-2 rounded">
+                                {% csrf_token %}
+                                <div>
+                                    <input type="file" name="arquivo_backup" class="form-control form-control-sm" required>
+                                </div>
+                                <button type="submit" name="btn_restore" class="btn btn-primary btn-sm">
+                                    <i class="fa-solid fa-upload me-2"></i>Restaurar
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 text-center">
+                        <h6 class="fw-bold text-danger">Área Perigosa</h6>
+                        <p class="text-muted small mb-3">Apaga todos os Clientes e Ordens de Serviço.</p>
+                        
+                        <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#modalReset">
+                            <i class="fa-solid fa-bomb me-2"></i>Reset de Fábrica
+                        </button>
+                    </div>
+                </div>
+            </div>
+          </div>
+        </div>
+
+      </div> </div> <div class="modal fade" id="modalReset" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content border-danger">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title"><i class="fa-solid fa-triangle-exclamation me-2"></i>Confirmação de Segurança</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p class="fw-bold text-danger">Você está prestes a apagar TODOS os dados de Clientes e Ordens de Serviço.</p>
+            <p>Essa ação não pode ser desfeita. Para confirmar, digite sua senha de administrador abaixo:</p>
+            
+            <form method="POST">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Sua Senha</label>
+                    <input type="password" name="senha_confirmacao" class="form-control" placeholder="Digite sua senha..." required>
+                </div>
+                <div class="text-end">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" name="btn_reset" class="btn btn-danger">Confirmar Reset</button>
+                </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+      </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+      // 1. Definição das máscaras
+      const masks = {
+          // Máscara de CNPJ: 00.000.000/0000-00
+          cnpj(value) {
+              return value
+                  .replace(/\D/g, '') // Remove tudo que não é dígito
+                  .replace(/^(\d{2})(\d)/, '$1.$2')
+                  .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+                  .replace(/\.(\d{3})(\d)/, '.$1/$2')
+                  .replace(/(\d{4})(\d)/, '$1-$2')
+                  .replace(/(-\d{2})\d+?$/, '$1'); // Impede digitar mais
+          },
+          // Máscara de Telefone: (00) 00000-0000
+          telefone(value) {
+              return value
+                  .replace(/\D/g, '')
+                  .replace(/^(\d{2})(\d)/, '($1) $2')
+                  .replace(/(\d{5})(\d)/, '$1-$2')
+                  .replace(/(-\d{4})\d+?$/, '$1');
+          },
+          // Máscara de CEP: 00000-000
+          cep(value) {
+              return value
+                  .replace(/\D/g, '')
+                  .replace(/^(\d{5})(\d)/, '$1-$2')
+                  .replace(/(-\d{3})\d+?$/, '$1');
+          }
+      };
+
+      // 2. Aplica as máscaras nos campos corretos
+      document.querySelectorAll('input').forEach(($input) => {
+          const field = $input.name; // Pega o 'name' do input (ex: cnpj, telefone)
+          
+          if (masks[field]) {
+              // Quando o usuário digita
+              $input.addEventListener('input', (e) => {
+                  e.target.value = masks[field](e.target.value);
+              }, false);
+              
+              // Quando a página carrega (para formatar o que vem do banco)
+              $input.value = masks[field]($input.value);
+          }
+      });
+    </script>
+  </body>
+</html>
