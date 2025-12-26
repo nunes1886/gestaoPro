@@ -39,7 +39,7 @@ def home_view(request):
     
     # Cálculos para o Dashboard
     total_os = OrdemServico.objects.count()
-    valor_total = OrdemServico.objects.aggregate(Sum('valor'))['valor__sum'] or 0
+    valor_total = OrdemServico.objects.aggregate(Sum('valor_total'))['valor_total__sum'] or 0
     os_pendentes = OrdemServico.objects.filter(status='PENDENTE').count()
 
     context = {

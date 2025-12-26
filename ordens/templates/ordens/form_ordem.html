@@ -19,6 +19,7 @@
         background: #212529;
         color: white;
         padding-top: 20px;
+        z-index: 1000;
       }
       .sidebar a {
         padding: 15px;
@@ -34,94 +35,160 @@
         margin-left: 250px;
         padding: 20px;
       }
+      @media (max-width: 768px) {
+        .sidebar { width: 100%; height: auto; position: relative; }
+        .main-content { margin-left: 0; }
+      }
     </style>
   </head>
-  <body>
+  <body class="bg-light">
+    
     <div class="sidebar shadow">
       <div class="text-center mb-4">
         {% if config_projeto.logo %}
-        <img
-          src="{{ config_projeto.logo.url }}"
-          width="80"
-          class="rounded-circle mb-2 border border-secondary"
-        />
+        <img src="{{ config_projeto.logo.url }}" width="80" class="rounded-circle mb-2 border border-secondary" />
         {% endif %}
         <h6 class="text-white px-2">{{ config_projeto.nome_empresa }}</h6>
       </div>
-      <a href="{% url 'home' %}"
-        ><i class="fa-solid fa-chart-line me-2"></i> Dashboard</a
-      >
-      <a href="{% url 'lista_clientes' %}"
-        ><i class="fa-solid fa-users me-2"></i> Clientes</a
-      >
-      <a href="{% url 'lista_ordens' %}"
-        ><i class="fa-solid fa-file-invoice-dollar me-2"></i> Ordens de
-        Serviço</a
-      >
-      <a href="{% url 'setor_arte' %}"
-        ><i class="fa-solid fa-palette me-2"></i> Setor de Arte</a
-      >
-      <a href="{% url 'financeiro' %}"
-        ><i class="fa-solid fa-wallet me-2"></i> Financeiro</a
-      >
-      <a href="{% url 'lista_funcionarios' %}"
-        ><i class="fa-solid fa-user-tie me-2"></i> Funcionários</a
-      >
+      <a href="{% url 'home' %}"><i class="fa-solid fa-chart-line me-2"></i> Dashboard</a>
+      <a href="{% url 'lista_clientes' %}"><i class="fa-solid fa-users me-2"></i> Clientes</a>
+      <a href="{% url 'lista_ordens' %}"><i class="fa-solid fa-file-invoice-dollar me-2"></i> Ordens de Serviço</a>
+      <a href="{% url 'setor_arte' %}"><i class="fa-solid fa-palette me-2"></i> Setor de Arte</a>
+      <a href="{% url 'financeiro' %}"><i class="fa-solid fa-wallet me-2"></i> Financeiro</a>
+      <a href="{% url 'lista_funcionarios' %}"><i class="fa-solid fa-user-tie me-2"></i> Funcionários</a>
       <a href="{% url 'configuracoes_sistema' %}" class="nav-link">
         <i class="fa-solid fa-screwdriver-wrench me-2"></i> Personalizar Sistema
       </a>
-      <a href="{% url 'logout' %}" class="text-danger mt-5"
-        ><i class="fa-solid fa-right-from-bracket me-2"></i> Sair</a
-      >
+      <a href="{% url 'logout' %}" class="text-danger mt-5"><i class="fa-solid fa-right-from-bracket me-2"></i> Sair</a>
     </div>
 
     <div class="main-content">
       <div class="container-fluid">
         <div class="card shadow-sm border-0">
           <div class="card-header bg-white py-3">
-            <h5 class="mb-0">
-              <i class="fa-solid fa-file-signature text-primary me-2"></i>Abrir
-              Nova Ordem de Serviço
+            <h5 class="mb-0 text-primary">
+              <i class="fa-solid fa-file-signature me-2"></i>Abrir Nova Ordem de Serviço
             </h5>
           </div>
           <div class="card-body p-4">
+            
             <form method="POST">
               {% csrf_token %}
+              
               <div class="row">
-                <div class="col-md-8 mb-3">
-                  <label class="form-label">Cliente</label>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label fw-bold">Cliente</label>
                   {{ form.cliente }}
                 </div>
-                <div class="col-md-4 mb-3">
-                  <label class="form-label">Valor Total (R$)</label>
-                  {{ form.valor }}
+                
+                <div class="col-md-3 mb-3">
+                    <label class="form-label text-success fw-bold">
+                        <i class="fa-solid fa-calculator me-1"></i>Preço Base (R$)
+                    </label>
+                    <input type="number" step="0.01" class="form-control" id="preco_base_calculo" placeholder="0,00">
+                    <div class="form-text text-muted small">Preço unitário ou do m²</div>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                  <label class="form-label fw-bold">Valor Total (R$)</label>
+                  {{ form.valor_total }}
                 </div>
               </div>
-              <div class="mb-3">
-                <label class="form-label">O que será feito?</label>
-                {{ form.servico }}
+
+              <hr class="text-muted">
+              <h6 class="text-secondary mb-3">Especificações do Serviço</h6>
+
+              <div class="row">
+                <div class="col-md-8 mb-3">
+                   <label class="form-label">Material</label>
+                   {{ form.material }}
+                </div>
+                <div class="col-md-4 mb-3">
+                   <label class="form-label">Quantidade</label>
+                   {{ form.quantidade }}
+                </div>
               </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                   <label class="form-label">Largura (Metros)</label>
+                   {{ form.largura }}
+                   <div class="form-text">Ex: Use 1,00 para 1 metro.</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                   <label class="form-label">Altura (Metros)</label>
+                   {{ form.altura }}
+                   <div class="form-text">Ex: Use 0,50 para meio metro.</div>
+                </div>
+              </div>
+
               <div class="mb-3">
-                <label class="form-label">Observações e Detalhes da Arte</label>
+                <label class="form-label fw-bold">Observações e Detalhes da Arte</label>
                 {{ form.detalhes }}
               </div>
-              <div class="col-md-4 mb-3">
-                <label class="form-label">Status Inicial</label>
-                {{ form.status }}
+
+              <div class="row">
+                <div class="col-md-4 mb-3">
+                  <label class="form-label fw-bold">Status Inicial</label>
+                  {{ form.status }}
+                </div>
               </div>
+
               <hr />
               <div class="d-flex justify-content-end">
-                <a href="{% url 'lista_ordens' %}" class="btn btn-light me-2"
-                  >Cancelar</a
-                >
-                <button type="submit" class="btn btn-primary px-5">
-                  Gerar OS
-                </button>
+                <a href="{% url 'lista_ordens' %}" class="btn btn-light border me-2">Cancelar</a>
+                <button type="submit" class="btn btn-primary px-5">Gerar OS</button>
               </div>
+
             </form>
           </div>
         </div>
       </div>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const elements = {
+                qtd: document.getElementById('id_quantidade'),
+                larg: document.getElementById('id_largura'),
+                alt: document.getElementById('id_altura'),
+                total: document.getElementById('id_valor_total'),
+                preco: document.getElementById('preco_base_calculo')
+            };
+
+            function parseLocalFloat(value) {
+                if (!value) return 0;
+                // Substitui vírgula por ponto para o JS entender
+                return parseFloat(value.toString().replace(',', '.')) || 0;
+            }
+
+            function calcular() {
+                let qtd = parseLocalFloat(elements.qtd.value);
+                let larg = parseLocalFloat(elements.larg.value);
+                let alt = parseLocalFloat(elements.alt.value);
+                let preco = parseLocalFloat(elements.preco.value);
+                let resultado = 0;
+
+                // LÓGICA EM METROS (Conforme seu models.py)
+                if (larg > 0 && alt > 0) {
+                    // Se tem largura e altura, é m²
+                    // Cálculo: Largura (m) * Altura (m) * Preço * Qtd
+                    let area = larg * alt;
+                    resultado = area * qtd * preco;
+                    console.log(`Área: ${area}m² | Total: ${resultado}`);
+                } else {
+                    // Se não tem medidas, é unitário (ex: Caneca)
+                    resultado = qtd * preco;
+                }
+
+                elements.total.value = resultado.toFixed(2);
+            }
+
+            // Ativa o cálculo quando o usuário digita em qualquer campo
+            Object.values(elements).forEach(el => {
+                if(el) el.addEventListener('input', calcular);
+            });
+        });
+    </script>
   </body>
-</html>
+</html> 
