@@ -59,4 +59,4 @@ Sistema web completo para gestão de pequenas empresas, com foco em controle de 
 7.  Acesse: `http://127.0.0.1:8000/`
 
 ---
-Desenvolvido por **[Seu Nome]**.
+Desenvolvido por **[Gledson_Nunes]**.
